@@ -1,16 +1,27 @@
 import csv
 import sys
+dane_wejsciowe = sys.argv[1]
+
+plik_wyjsciowy = "out.csv"
+if plik_wyjsciowy not in sys.argv:
+    print('Nie podano pliku wyjsciowego "out.csv" w argumentach ')
+    exit()
+dane_wyjsciowe = sys.argv[2]
 
 dane = []
 
-with open(sys.argv[1], "r", newline="") as f:
+with open(dane_wejsciowe, "r", newline="") as f:
     reader = csv.reader(f)
     for line in reader:
         # print(line)
         dane.append(line)
 # print(dane)
 for zmiana in sys.argv[3:]:
+    if "," not in zmiana:
+        print('Podano nieprawidłowe separotory w argumentach zmian. Zmiany muszą być oddzielone ","')
+        exit()
     # print(zmiana)
+
     x = list(zmiana.split(","))
     # print(x)
     kolumna = int(x[0])
@@ -22,7 +33,7 @@ for zmiana in sys.argv[3:]:
     wybrany_wiersz[kolumna] = wartosc
     # print(wybrany_wiersz[kolumna])
 
-with open(sys.argv[2], "w", newline="") as f:
+with open(dane_wyjsciowe, "w", newline="") as f:
     writer = csv.writer(f)
     for row in dane:
         writer.writerow(row)
