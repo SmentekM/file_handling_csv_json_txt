@@ -7,7 +7,7 @@ import os
 
 class Pliki:
 
-    def __init__(self, dane_wejsciowe=sys.argv[1], dane_wyjsciowe=sys.argv[2]):
+    def __init__(self, dane_wejsciowe=None, dane_wyjsciowe=None):
         self.dane_wejsciowe = dane_wejsciowe
         self.dane_wyjsciowe = dane_wyjsciowe
 
@@ -32,10 +32,7 @@ class Pliki:
 
     def spr_pliku(self):
         if not os.path.exists(self.dane_wejsciowe):
-            print("Plik do odczytu nie istniej")
-            return exit()
-        elif not os.path.exists(self.dane_wyjsciowe):
-            print('Plik do zapisu nie istenie')
+            print("Plik do odczytu nie istnieje")
             return exit()
 
 
@@ -64,8 +61,8 @@ class PlikiJson(Pliki):
             dane.append(json.load(f))
         return dane
 
-    def output_json(self, dane):
-        with open(self.dane_wyjsciowe, "w") as f:
+    def output_json(self, dane, lokalizacja):
+        with open(lokalizacja, "w") as f:
             json.dump(dane, f)
         return dane
 
@@ -77,8 +74,8 @@ class PlikiPickle(Pliki):
             dane.append(pickle.load(f))
         return dane
 
-    def output_pickle(self, dane):
-        with open(self.dane_wyjsciowe, "wb") as f:
+    def output_pickle(self, dane, lokalizacja):
+        with open(lokalizacja, "wb") as f:
             pickle.dump(dane, f)
         return dane
 
@@ -90,8 +87,8 @@ class PlikiTxt(Pliki):
             dane.append(f.readlines())
         return dane
 
-    def output(self, dane):
-        with open(self.dane_wyjsciowe, "w") as f:
+    def output(self, dane, lokalizacja):
+        with open(lokalizacja, "w") as f:
             for linia in dane:
                 f.write(str(linia) + '\n')
         return dane
@@ -110,37 +107,46 @@ def spr_typ_pliku_wejscie(nazwa_pliku):
     elif nazwa_pliku.endswith(".txt"):
         ob_txt.input(dane=dane)
         ob_txt.wprowadznie_zmian(dane=dane)
+    else:
+        print(' Podano nieprawidłowy plik wejściowy')
+        exit()
 
 
 def spr_pliku_wyjscia(nazwa_pliku):
 
     if nazwa_pliku.endswith(".csv"):
-        ob_csv.output_csv(dane=dane,lokalizacja=lokalizacja)
+        ob_csv.output_csv(dane=dane, lokalizacja=lokalizacja)
     elif nazwa_pliku.endswith(".json"):
-        ob_json.output_json(dane=dane)
+        ob_json.output_json(dane=dane, lokalizacja=lokalizacja)
     elif nazwa_pliku.endswith(".pickle"):
-        ob_pickle.output_pickle(dane=dane)
+        ob_pickle.output_pickle(dane=dane, lokalizacja=lokalizacja)
     elif nazwa_pliku.endswith(".txt"):
-        ob_txt.output(dane=dane)
+        ob_txt.output(dane=dane, lokalizacja=lokalizacja)
+    else:
+        print("Podano nieprawidłowy plik wejściowy.")
+        exit()
 
 
 dane = []
-lokalizacja = input("Podaj lokalizację.Jeżeli nie podasz nic plik zostanie zapisany w bieżacej lokalizacj. :")
-if lokalizacja == "":
-    lokalizacja = os.path.join(os.getcwd(), str(sys.argv[2]))
-    print(lokalizacja)
+if len(sys.argv) < 3:
+    print("Błędnie podane dane w terminalu. Prawidłowe wejście:/\n"
+          " 'program' 'plik wejscia' 'plik wyjscia' 'zmiany' ")
+    exit()
 else:
-    lokalizacja= os.path.join(lokalizacja,str(sys.argv[2]))
+    ob_csv = PlikiCsv(dane_wejsciowe=sys.argv[1], dane_wyjsciowe=sys.argv[2])
+    ob_json = PlikiJson(dane_wejsciowe=sys.argv[1], dane_wyjsciowe=sys.argv[2])
+    ob_pickle = PlikiPickle(dane_wejsciowe=sys.argv[1], dane_wyjsciowe=sys.argv[2])
+    ob_txt = PlikiTxt(dane_wejsciowe=sys.argv[1], dane_wyjsciowe=sys.argv[2])
 
-ob_csv = PlikiCsv()
-ob_json = PlikiJson()
-ob_pickle = PlikiPickle()
-ob_txt = PlikiTxt()
+    Pliki(dane_wejsciowe=sys.argv[1]).spr_pliku()
+    spr_typ_pliku_wejscie(sys.argv[1])
+    print(f'Plik wejściowy po zmianach:\n {dane}')
 
-# Pliki().spr_pliku()
-spr_typ_pliku_wejscie(Pliki().dane_wejsciowe)
-print(dane)
-spr_pliku_wyjscia(Pliki().dane_wyjsciowe)
+    lokalizacja = input("\nPodaj lokalizację.Jeżeli nie podasz nic plik zostanie zapisany w bieżacej lokalizacj.:\n")
+    if lokalizacja == "":
+        lokalizacja = os.path.join(os.getcwd(), str(sys.argv[2]))
 
-print(os.getcwd())
+    else:
+        lokalizacja = os.path.join(lokalizacja, str(sys.argv[2]))
 
+    spr_pliku_wyjscia(sys.argv[2])
